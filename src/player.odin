@@ -11,6 +11,7 @@ import rl "vendor:raylib"
 UP :: vec3{0, 1, 0}
 
 Player :: struct {
+        camera_offset: vec3,
         height: f32,
         state:  Player_State,
         state_started: time.Tick,
@@ -35,11 +36,22 @@ player_camera_system :: proc(w: ^ecs.World) {
         trans := ecs.get(w, ctx.player, Transform)
         player := ecs.get(w, ctx.player, Player)
 
+        log.debug(player.state, "started", time.tick_since(player.state_started), "ago")
+        if player.state == .Running {
+                from_start := f32(time.duration_seconds(time.tick_since(player.state_started))) * 10
+                player.camera_offset.y += math.sin(from_start) * w.delta * 2
+        } else {
+                player.camera_offset /= 1 + (8 * w.delta)
+        }
+
         pos := trans.pos
         pos.y += player.height
+        pos += player.camera_offset
         ctx.cam.position = pos
         ctx.cam.up = UP
         ctx.cam.target = pos + trans.dir
+
+        ecs.set(w, ctx.player, player)
 }
 
 MOUSE_SENSITIVITY :: 0.4
