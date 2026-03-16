@@ -34,6 +34,23 @@ player_camera_system :: proc(w: ^ecs.World) {
 }
 
 player_direction_system :: proc(w: ^ecs.World) {
+        delta := rl.GetMouseDelta()
+
+        e := ctx(w).player
+        trans := ecs.get(w, e, Transform)
+        movement := ecs.get(w, e, Movement)
+
+        right := linalg.cross(trans.dir, UP)
+
+        // yaw := linalg.quaternion_angle_axis(linalg.to_radians(delta.x), UP)
+        // pitch := linalg.quaternion_angle_axis(linalg.to_radians(delta.y), right)
+        // trans.dir = linalg.to_matrix3(yaw) * linalg.to_matrix3(yaw) * trans.dir
+
+        yaw := linalg.matrix3_rotate_f32(linalg.to_radians(-delta.x), UP)
+        pitch := linalg.matrix3_rotate_f32(linalg.to_radians(-delta.y), right)
+        trans.dir = yaw * pitch * trans.dir
+
+        ecs.set(w, e, trans)
 }
 
 player_movement_system :: proc(w: ^ecs.World) {
