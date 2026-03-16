@@ -39,7 +39,9 @@ player_camera_system :: proc(w: ^ecs.World) {
         log.debug(player.state, "started", time.tick_since(player.state_started), "ago")
         if player.state == .Running {
                 from_start := f32(time.duration_seconds(time.tick_since(player.state_started))) * 10
-                player.camera_offset.y += math.sin(from_start) * w.delta * 2
+                // player.camera_offset.y += math.sin(from_start) * w.delta * 2
+                player.camera_offset = right(trans.dir) * (math.sin(from_start) * 0.03)
+                player.camera_offset += UP * (math.sin(from_start) * 0.1)
         } else {
                 player.camera_offset /= 1 + (8 * w.delta)
         }
@@ -52,6 +54,10 @@ player_camera_system :: proc(w: ^ecs.World) {
         ctx.cam.target = pos + trans.dir
 
         ecs.set(w, ctx.player, player)
+}
+
+right :: proc(dir: vec3) -> vec3 {
+        return linalg.cross(dir, UP)
 }
 
 MOUSE_SENSITIVITY :: 0.4
