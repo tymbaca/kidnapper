@@ -68,24 +68,29 @@ player_direction_system :: proc(w: ^ecs.World) {
         e := ctx.player
         trans := ecs.get(w, e, Transform)
 
-        trans.yaw = math.wrap(trans.yaw - delta.x * MOUSE_SENSITIVITY, 360)
-        trans.pitch = linalg.clamp((trans.pitch - delta.y * MOUSE_SENSITIVITY), -80, 80)
+        // just to make it more consistent
+        sens := f32(MOUSE_SENSITIVITY)
+        sens = sens * (SCREEN_WIDTH / f32(rl.GetScreenWidth()))
+
+        trans.yaw = math.wrap(trans.yaw - delta.x * sens, 360)
+        trans.pitch = linalg.clamp((trans.pitch - delta.y * sens), -80, 80)
 
         pitch := math.to_radians(trans.pitch)
         yaw := math.to_radians(trans.yaw)
 
+        trans.dir = dir_from_yaw_and_pitch(yaw, pitch)
+
+        ecs.set(w, e, trans)
+}
+
+dir_from_yaw_and_pitch :: proc(yaw: f32, pitch: f32) -> vec3 {
+        // smart ass math, link: https://stackoverflow.com/questions/10569659/camera-pitch-yaw-to-direction-vector
         xz_len := math.cos(pitch)
         x := xz_len * math.cos(yaw)
         y := math.sin(pitch)
         z := xz_len * math.sin(-yaw)
-        trans.dir = {x, y, z}
 
-        // right := linalg.cross(trans.dir, UP)
-        // yaw := linalg.matrix3_rotate_f32(linalg.to_radians(-delta.x), UP)
-        // pitch := linalg.matrix3_rotate_f32(linalg.to_radians(-delta.y), right)
-        // trans.dir = yaw * pitch * trans.dir
-
-        ecs.set(w, e, trans)
+        return {x, y, z}
 }
 
 player_movement_system :: proc(w: ^ecs.World) {
