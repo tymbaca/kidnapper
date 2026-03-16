@@ -1,6 +1,7 @@
 #+vet explicit-allocators
 package src
 
+import "core:log"
 import "core:math/linalg"
 import "lib:ecs"
 import rl "vendor:raylib"
@@ -18,6 +19,8 @@ Movement :: struct {
         speed: f32,
 }
 
+PLAYER_SPEED :: 70
+
 player_camera_system :: proc(w: ^ecs.World) {
         ctx := ctx(w)
         trans := ecs.get(w, ctx.player, Transform)
@@ -30,62 +33,41 @@ player_camera_system :: proc(w: ^ecs.World) {
         ctx.cam.target = pos + trans.dir
 }
 
-player_direction_syste :: proc(w: ^ecs.World) {
-        for e in ecs.query(w, {Player, Transform, Movement}) {
-                trans := ecs.get(w, e, Transform)
-                movement := ecs.get(w, e, Movement)
-
-                flat_dir := trans.dir
-                flat_dir.y = 0
-                flat_dir = linalg.normalize(flat_dir)
-
-                mov: vec3
-                if rl.IsKeyDown(.W) {
-                        mov += flat_dir
-                }
-                if rl.IsKeyDown(.S) {
-                        mov -= flat_dir
-                }
-                if rl.IsKeyDown(.D) {
-                        mov += linalg.cross(flat_dir, UP)
-                }
-                if rl.IsKeyDown(.A) {
-                        mov -= linalg.cross(flat_dir, UP)
-                }
-
-                movement.desired = mov
-
-                ecs.set(w, e, movement)
-        }
+player_direction_system :: proc(w: ^ecs.World) {
 }
 
 player_movement_system :: proc(w: ^ecs.World) {
-        for e in ecs.query(w, {Player, Transform, Movement}) {
-                trans := ecs.get(w, e, Transform)
-                movement := ecs.get(w, e, Movement)
+        e := ctx(w).player
+        trans := ecs.get(w, e, Transform)
+        movement := ecs.get(w, e, Movement)
 
-                flat_dir := trans.dir
-                flat_dir.y = 0
-                flat_dir = linalg.normalize(flat_dir)
+        flat_dir := trans.dir
+        flat_dir.y = 0
+        flat_dir = linalg.normalize(flat_dir)
 
-                mov: vec3
-                if rl.IsKeyDown(.W) {
-                        mov += flat_dir
-                }
-                if rl.IsKeyDown(.S) {
-                        mov -= flat_dir
-                }
-                if rl.IsKeyDown(.D) {
-                        mov += linalg.cross(flat_dir, UP)
-                }
-                if rl.IsKeyDown(.A) {
-                        mov -= linalg.cross(flat_dir, UP)
-                }
-
-                movement.desired = mov
-
-                ecs.set(w, e, movement)
+        mov: vec3
+        if rl.IsKeyDown(.W) {
+                mov += flat_dir
         }
+        if rl.IsKeyDown(.S) {
+                mov -= flat_dir
+        }
+        if rl.IsKeyDown(.D) {
+                mov += linalg.cross(flat_dir, UP)
+        }
+        if rl.IsKeyDown(.A) {
+                mov -= linalg.cross(flat_dir, UP)
+        }
+
+        mov = linalg.normalize0(mov)
+
+        if rl.IsKeyDown(.W) && rl.IsKeyDown(.LEFT_SHIFT) {
+                mov *= 2
+        }
+
+        movement.desired = mov
+
+        ecs.set(w, e, movement)
 }
 
 movement_system :: proc(w: ^ecs.World) {

@@ -37,6 +37,7 @@ main :: proc() {
         
         ecs.init(w, {Transform, Player, Movement, Velocity}, allocator)
         ecs.register(w, player_camera_system)
+        ecs.register(w, player_direction_system)
         ecs.register(w, player_movement_system)
         ecs.register(w, movement_system)
         ecs.register(w, velocity_system)
@@ -45,7 +46,7 @@ main :: proc() {
         ecs.set(w, player, Player{height = 3})
         ecs.set(w, player, Transform{dir = {0, 0, 1}})
         ecs.set(w, player, Velocity{})
-        ecs.set(w, player, Movement{speed = 40})
+        ecs.set(w, player, Movement{speed = PLAYER_SPEED})
         ctx(w).player = player
         
         rl.InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "kidnapper")
