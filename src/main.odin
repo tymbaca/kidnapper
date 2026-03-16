@@ -12,6 +12,7 @@ SCREEN_HEIGHT :: 600
 Context :: struct {
         player: ecs.Entity,
         cam:    rl.Camera3D,
+        cursor_enabled:  bool,
 }
 
 ctx :: proc(w: ^ecs.World) -> ^Context {
@@ -21,6 +22,9 @@ ctx :: proc(w: ^ecs.World) -> ^Context {
 Transform :: struct {
         pos: vec3,
         dir: vec3, // local
+
+        yaw:   f32,
+        pitch: f32,
 }
 
 vec2 :: [2]f32
@@ -36,6 +40,7 @@ main :: proc() {
         w.userdata = &_ctx
         
         ecs.init(w, {Transform, Player, Movement, Velocity}, allocator)
+        ecs.register(w, debug_system)
         ecs.register(w, player_camera_system)
         ecs.register(w, player_direction_system)
         ecs.register(w, player_movement_system)
@@ -49,7 +54,9 @@ main :: proc() {
         ecs.set(w, player, Movement{speed = PLAYER_SPEED})
         ctx(w).player = player
         
+        rl.SetConfigFlags({.WINDOW_RESIZABLE})
         rl.InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "kidnapper")
+        rl.DisableCursor()
         rl.SetTargetFPS(100)
 
         cam: rl.Camera3D

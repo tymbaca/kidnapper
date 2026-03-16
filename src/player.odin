@@ -1,6 +1,8 @@
 #+vet explicit-allocators
 package src
 
+import "core:time"
+import "core:math"
 import "core:log"
 import "core:math/linalg"
 import "lib:ecs"
@@ -10,6 +12,13 @@ UP :: vec3{0, 1, 0}
 
 Player :: struct {
         height: f32,
+        state:  Player_State,
+        state_started: time.Tick,
+}
+
+Player_State :: enum {
+        Idle,
+        Running,
 }
 
 Velocity :: distinct vec3
@@ -33,22 +42,48 @@ player_camera_system :: proc(w: ^ecs.World) {
         ctx.cam.target = pos + trans.dir
 }
 
+MOUSE_SENSITIVITY :: 0.4
+
+debug_system :: proc(w: ^ecs.World) {
+        ctx := ctx(w)
+        if rl.IsKeyPressed(.BACKSLASH) {
+                ctx.cursor_enabled = !ctx.cursor_enabled
+                
+                if ctx.cursor_enabled {
+                        rl.EnableCursor()
+                } else {
+                        rl.DisableCursor()
+                }
+        }
+}
+
 player_direction_system :: proc(w: ^ecs.World) {
+        ctx := ctx(w)
+        if ctx.cursor_enabled {
+                return
+        }
+
         delta := rl.GetMouseDelta()
 
-        e := ctx(w).player
+        e := ctx.player
         trans := ecs.get(w, e, Transform)
-        movement := ecs.get(w, e, Movement)
 
-        right := linalg.cross(trans.dir, UP)
+        trans.yaw = math.wrap(trans.yaw - delta.x * MOUSE_SENSITIVITY, 360)
+        trans.pitch = linalg.clamp((trans.pitch - delta.y * MOUSE_SENSITIVITY), -80, 80)
 
-        // yaw := linalg.quaternion_angle_axis(linalg.to_radians(delta.x), UP)
-        // pitch := linalg.quaternion_angle_axis(linalg.to_radians(delta.y), right)
-        // trans.dir = linalg.to_matrix3(yaw) * linalg.to_matrix3(yaw) * trans.dir
+        pitch := math.to_radians(trans.pitch)
+        yaw := math.to_radians(trans.yaw)
 
-        yaw := linalg.matrix3_rotate_f32(linalg.to_radians(-delta.x), UP)
-        pitch := linalg.matrix3_rotate_f32(linalg.to_radians(-delta.y), right)
-        trans.dir = yaw * pitch * trans.dir
+        xz_len := math.cos(pitch)
+        x := xz_len * math.cos(yaw)
+        y := math.sin(pitch)
+        z := xz_len * math.sin(-yaw)
+        trans.dir = {x, y, z}
+
+        // right := linalg.cross(trans.dir, UP)
+        // yaw := linalg.matrix3_rotate_f32(linalg.to_radians(-delta.x), UP)
+        // pitch := linalg.matrix3_rotate_f32(linalg.to_radians(-delta.y), right)
+        // trans.dir = yaw * pitch * trans.dir
 
         ecs.set(w, e, trans)
 }
@@ -56,6 +91,7 @@ player_direction_system :: proc(w: ^ecs.World) {
 player_movement_system :: proc(w: ^ecs.World) {
         e := ctx(w).player
         trans := ecs.get(w, e, Transform)
+        player := ecs.get(w, e, Player)
         movement := ecs.get(w, e, Movement)
 
         flat_dir := trans.dir
@@ -84,7 +120,17 @@ player_movement_system :: proc(w: ^ecs.World) {
 
         movement.desired = mov
 
+        if mov == {} && player.state != .Idle {
+                player.state = .Idle
+                player.state_started = time.tick_now()
+        }
+        if mov != {} && player.state != .Running {
+                player.state = .Running
+                player.state_started = time.tick_now()
+        }
+
         ecs.set(w, e, movement)
+        ecs.set(w, e, player)
 }
 
 movement_system :: proc(w: ^ecs.World) {
