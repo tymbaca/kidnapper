@@ -1,6 +1,8 @@
 #+vet explicit-allocators
 package src
 
+import "core:container/small_array"
+import "lib:mini/bvh"
 import "core:log"
 import "core:math/linalg"
 import "lib:ecs"
@@ -13,6 +15,12 @@ Context :: struct {
         player: ecs.Entity,
         cam:    rl.Camera3D,
         cursor_enabled:  bool,
+        models: [Model_Kind]rl.Model,
+        item_offsets: [Model_Kind]vec3,
+}
+
+Model_Kind :: enum {
+        Double_Barrel,
 }
 
 ctx :: proc(w: ^ecs.World) -> ^Context {
@@ -29,6 +37,7 @@ Transform :: struct {
 
 vec2 :: [2]f32
 vec3 :: [3]f32
+vec4 :: [4]f32
 
 main :: proc() {
         context.logger = log.create_console_logger(.Debug, allocator = context.allocator)
@@ -47,8 +56,12 @@ main :: proc() {
         ecs.register(w, movement_system)
         ecs.register(w, velocity_system)
 
+        context.temp_allocator = w.frame_allocator
+
         player := ecs.create(w)
-        ecs.set(w, player, Player{height = 3})
+        player_component := Player{height = 3}
+        small_array.append(&player_component.items, Double_Barrel{})
+        ecs.set(w, player, player_component)
         ecs.set(w, player, Transform{dir = {0, 0, 1}})
         ecs.set(w, player, Velocity{})
         ecs.set(w, player, Movement{speed = PLAYER_SPEED})
@@ -71,6 +84,8 @@ main :: proc() {
         body_pos: rl.Vector3 = {4, 2, 2}
         gun := rl.LoadModel("resources/gun.obj")
         gun_pos: rl.Vector3
+        ctx(w).models[.Double_Barrel] = rl.LoadModel("resources/gun.obj")
+        ctx(w).item_offsets[.Double_Barrel] = {0, 0, 1}
 
         for !rl.WindowShouldClose() {
                 ecs.update(w)
@@ -85,6 +100,8 @@ main :: proc() {
                 rl.DrawBoundingBox(rl.GetModelBoundingBox(body), rl.RED)
                 rl.DrawModel(gun, gun_pos, 1, rl.WHITE)
                 rl.DrawBoundingBox(rl.GetModelBoundingBox(gun), rl.RED)
+
+                draw_equipped(w)
 
                 rl.DrawGrid(30, 5)
                 rl.DrawCapsuleWires({0, 0, 0}, {4, 4, 4}, 1, 12, 9, rl.GREEN)

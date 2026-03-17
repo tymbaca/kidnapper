@@ -1,6 +1,7 @@
 #+vet explicit-allocators
 package src
 
+import "core:container/small_array"
 import "core:time"
 import "core:math"
 import "core:log"
@@ -13,11 +14,27 @@ UP :: vec3{0, 1, 0}
 Player :: struct {
         camera_offset: vec3,
         height: f32,
-        state:  Player_State,
-        state_started: time.Tick,
+        mov_state:  Movement_State,
+        mov_state_started: time.Tick,
+
+        items: small_array.Small_Array(20, Inventory_Item),
+        current_item: int,
 }
 
-Player_State :: enum {
+Inventory_Item :: union {
+        Gun,
+}
+
+Gun :: union {
+        Double_Barrel,
+}
+
+Double_Barrel :: struct {
+        loaded: int,
+        ammo: int,
+}
+
+Movement_State :: enum {
         Idle,
         Running,
 }
@@ -36,9 +53,9 @@ player_camera_system :: proc(w: ^ecs.World) {
         trans := ecs.get(w, ctx.player, Transform)
         player := ecs.get(w, ctx.player, Player)
 
-        log.debug(player.state, "started", time.tick_since(player.state_started), "ago")
-        if player.state == .Running {
-                from_start := f32(time.duration_seconds(time.tick_since(player.state_started))) * 10
+        log.debug(player.mov_state, "started", time.tick_since(player.mov_state_started), "ago")
+        if player.mov_state == .Running {
+                from_start := f32(time.duration_seconds(time.tick_since(player.mov_state_started))) * 10
                 // player.camera_offset.y += math.sin(from_start) * w.delta * 2
                 player.camera_offset = right(trans.dir) * (math.sin(from_start) * 0.03)
                 player.camera_offset += UP * (math.sin(from_start) * 0.1)
@@ -46,14 +63,20 @@ player_camera_system :: proc(w: ^ecs.World) {
                 player.camera_offset /= 1 + (8 * w.delta)
         }
 
-        pos := trans.pos
-        pos.y += player.height
-        pos += player.camera_offset
+        pos := player_head_pos(player, trans)
         ctx.cam.position = pos
         ctx.cam.up = UP
         ctx.cam.target = pos + trans.dir
 
         ecs.set(w, ctx.player, player)
+}
+
+player_head_pos :: proc(player: Player, trans: Transform) -> vec3 {
+        pos := trans.pos
+        pos.y += player.height
+        pos += player.camera_offset
+
+        return pos
 }
 
 right :: proc(dir: vec3) -> vec3 {
@@ -143,13 +166,13 @@ player_movement_system :: proc(w: ^ecs.World) {
 
         movement.desired = mov
 
-        if mov == {} && player.state != .Idle {
-                player.state = .Idle
-                player.state_started = time.tick_now()
+        if mov == {} && player.mov_state != .Idle {
+                player.mov_state = .Idle
+                player.mov_state_started = time.tick_now()
         }
-        if mov != {} && player.state != .Running {
-                player.state = .Running
-                player.state_started = time.tick_now()
+        if mov != {} && player.mov_state != .Running {
+                player.mov_state = .Running
+                player.mov_state_started = time.tick_now()
         }
 
         ecs.set(w, e, movement)
