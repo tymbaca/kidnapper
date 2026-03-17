@@ -8,15 +8,14 @@ import "core:math/linalg"
 import "lib:ecs"
 import rl "vendor:raylib"
 
-SCREEN_WIDTH :: 800
-SCREEN_HEIGHT :: 600
+SCREEN_WIDTH :: 2800
+SCREEN_HEIGHT :: 1000
 
 Context :: struct {
         player: ecs.Entity,
         cam:    rl.Camera3D,
         cursor_enabled:  bool,
         models: [Model_Kind]rl.Model,
-        item_offsets: [Model_Kind]vec3,
 }
 
 Model_Kind :: enum {
@@ -50,11 +49,11 @@ main :: proc() {
         
         ecs.init(w, {Transform, Player, Movement, Velocity}, allocator)
         ecs.register(w, debug_system)
-        ecs.register(w, player_camera_system)
-        ecs.register(w, player_direction_system)
         ecs.register(w, player_movement_system)
         ecs.register(w, movement_system)
         ecs.register(w, velocity_system)
+        ecs.register(w, player_direction_system)
+        ecs.register(w, player_camera_system)
 
         context.temp_allocator = w.frame_allocator
 
@@ -70,7 +69,7 @@ main :: proc() {
         rl.SetConfigFlags({.WINDOW_RESIZABLE})
         rl.InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "kidnapper")
         rl.DisableCursor()
-        rl.SetTargetFPS(100)
+        rl.SetTargetFPS(120)
 
         cam: rl.Camera3D
         cam.up = {0, 1, 0}
@@ -85,7 +84,6 @@ main :: proc() {
         gun := rl.LoadModel("resources/gun.obj")
         gun_pos: rl.Vector3
         ctx(w).models[.Double_Barrel] = rl.LoadModel("resources/gun.obj")
-        ctx(w).item_offsets[.Double_Barrel] = {0, 0, 1}
 
         for !rl.WindowShouldClose() {
                 ecs.update(w)
@@ -107,6 +105,7 @@ main :: proc() {
                 rl.DrawCapsuleWires({0, 0, 0}, {4, 4, 4}, 1, 12, 9, rl.GREEN)
 
                 rl.EndMode3D()
+                rl.DrawFPS(10, 10)
                 rl.EndDrawing()
         }
 }

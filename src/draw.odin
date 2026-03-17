@@ -21,15 +21,14 @@ draw_equipped :: proc(w: ^ecs.World) {
                 switch gun in item {
                 case Double_Barrel:
                         model := ctx.models[.Double_Barrel]
-                        offset := ctx.item_offsets[.Double_Barrel]
 
-                        rot := linalg.matrix4_look_at_f32(trans.pos, trans.pos+trans.dir, UP)
-                        offset = vec4_to_vec3(rot * vec3_to_vec4(offset))
+                        rot := linalg.quaternion_from_forward_and_up_f32(trans.dir, UP)
+                        // offset = vec4_to_vec3(rot * vec3_to_vec4(offset))
                         
-                        angle, axis := linalg.angle_axis_from_quaternion(linalg.quaternion_from_matrix4_f32(rot))
+                        angle, axis := linalg.angle_axis_from_quaternion(rot)
                         log.debug("angle", linalg.to_degrees(angle), "axis", axis)
 
-                        rl.DrawModelEx(model, pos + offset, axis, linalg.to_degrees(angle), {1, 1, 1}, rl.WHITE)
+                        rl.DrawModelEx(model, pos, axis, linalg.to_degrees(angle), {1, 1, 1}, rl.WHITE)
                 }
         }
 }

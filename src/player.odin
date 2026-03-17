@@ -83,7 +83,7 @@ right :: proc(dir: vec3) -> vec3 {
         return linalg.cross(dir, UP)
 }
 
-MOUSE_SENSITIVITY :: 0.4
+MOUSE_SENSITIVITY :: 0.2
 
 debug_system :: proc(w: ^ecs.World) {
         ctx := ctx(w)
