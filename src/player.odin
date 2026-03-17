@@ -91,7 +91,7 @@ player_direction_system :: proc(w: ^ecs.World) {
         sens = sens * (SCREEN_WIDTH / f32(rl.GetScreenWidth()))
 
         trans.yaw = math.wrap(trans.yaw - delta.x * sens, 360)
-        trans.pitch = linalg.clamp((trans.pitch - delta.y * sens), -80, 80)
+        trans.pitch = linalg.clamp((trans.pitch - delta.y * sens), -89, 89)
 
         pitch := math.to_radians(trans.pitch)
         yaw := math.to_radians(trans.yaw)

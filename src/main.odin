@@ -87,6 +87,7 @@ main :: proc() {
                 rl.DrawBoundingBox(rl.GetModelBoundingBox(gun), rl.RED)
 
                 rl.DrawGrid(30, 5)
+                rl.DrawCapsuleWires({0, 0, 0}, {4, 4, 4}, 1, 12, 9, rl.GREEN)
 
                 rl.EndMode3D()
                 rl.EndDrawing()
