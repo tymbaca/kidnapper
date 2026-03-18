@@ -19,6 +19,12 @@ Context :: struct {
         models: [Model_Kind]rl.Model,
 }
 
+Model :: struct {
+        model: rl.Model, // shared raylib model
+        anim_frame: i32,
+        anim:       i32,
+}
+
 Model_Kind :: enum {
         Double_Barrel,
 }
@@ -84,10 +90,10 @@ main :: proc() {
         body_pos: rl.Vector3 = {4, 2, 2}
         gun := rl.LoadModel("resources/gun.obj")
         gun_pos: rl.Vector3
-        ctx(w).models[.Double_Barrel] = rl.LoadModel("resources/gun.glb")
+        ctx(w).models[.Double_Barrel] = rl.LoadModel("resources/gun.m3d")
 
         anim_count: c.int
-        anims := rl.LoadModelAnimations("resources/gun.glb", &anim_count)
+        anims := rl.LoadModelAnimations("resources/gun.m3d", &anim_count)
 
         anim_index :: 0
         anim_frame: i32

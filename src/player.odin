@@ -31,11 +31,6 @@ Gun :: union {
         Double_Barrel,
 }
 
-Double_Barrel :: struct {
-        loaded: int,
-        ammo: int,
-}
-
 Movement_State :: enum {
         Idle,
         Running,
