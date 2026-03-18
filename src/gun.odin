@@ -26,8 +26,8 @@ double_barrel_animations := [Double_Barrel_State]i32 {
         .Reload = 1,
 }
 
-DOUBLE_BARRED_READY_ANIM :: 0
-DOUBLE_BARRED_FIRE_ANIM :: 1
+DOUBLE_BARRED_READY_ANIM :: 1
+DOUBLE_BARRED_FIRE_ANIM :: 0
 
 DOUBLE_BARREL_FIRE_DUR :: 1 * time.Second
 

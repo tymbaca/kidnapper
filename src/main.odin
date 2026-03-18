@@ -118,7 +118,8 @@ main :: proc() {
 
                 ecs.update(w)
 
-                rl.UpdateModelAnimation(ctx.models[.Double_Barrel], anims[anim_index], anim_frame)
+                // BUG: 
+                // rl.UpdateModelAnimation(ctx.models[.Double_Barrel], anims[anim_index], anim_frame)
 
                 rl.BeginDrawing()
                 rl.ClearBackground(rl.DARKGRAY)

@@ -8,7 +8,7 @@ import "core:container/small_array"
 import rl "vendor:raylib"
 import "lib:ecs"
 
-ANIM_FRAME_TIME :: 42 * time.Millisecond // 1/24 seconds
+ANIM_FRAME_TIME :: 8 * time.Millisecond
 
 draw_equipped :: proc(w: ^ecs.World) {
         ctx := ctx(w)
@@ -35,7 +35,10 @@ draw_equipped :: proc(w: ^ecs.World) {
                                 rl.UpdateModelAnimation(model, anims[DOUBLE_BARRED_READY_ANIM], 0)
                                 rl.DrawModelEx(model, pos, axis, linalg.to_degrees(angle), {1, 1, 1}, rl.WHITE)
                         case .Fired:
-                                frame := min(i32(gun.tween.elapsed / ANIM_FRAME_TIME), 1)
+                                frame := i32(gun.tween.elapsed / ANIM_FRAME_TIME)
+                                if frame > anims[DOUBLE_BARRED_FIRE_ANIM].frameCount {
+                                        frame = 0
+                                }
                                 rl.UpdateModelAnimation(model, anims[DOUBLE_BARRED_FIRE_ANIM], frame)
                                 rl.DrawModelEx(model, pos, axis, linalg.to_degrees(angle), {1, 1, 1}, rl.WHITE)
                         case .Reload:
