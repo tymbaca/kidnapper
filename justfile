@@ -1,5 +1,5 @@
 BUILD_FLAGS := "-collection:src=src -collection:lib=lib"
-OUT := "tunnels.bin"
+OUT := "kidnapper.bin"
 
 run: build
     ./{{OUT}}

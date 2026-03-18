@@ -1,6 +1,7 @@
 #+vet explicit-allocators
 package src
 
+import "core:math/ease"
 import "core:container/small_array"
 import "core:time"
 import "core:math"
@@ -17,8 +18,9 @@ Player :: struct {
         mov_state:  Movement_State,
         mov_state_started: time.Tick,
 
-        items: small_array.Small_Array(20, Inventory_Item),
+        items:        small_array.Small_Array(20, Inventory_Item),
         current_item: int,
+        item_dir:     vec3, // for smooth animation
 }
 
 Inventory_Item :: union {
@@ -62,6 +64,12 @@ player_camera_system :: proc(w: ^ecs.World) {
         } else {
                 player.camera_offset /= 1 + (8 * w.delta)
         }
+
+        // if player.item_dir == {} {
+        //         player.item_dir = trans.dir
+        // } else {
+        //         player.item_dir = linalg.lerp(player.item_dir, trans.dir, 1 * w.delta)
+        // }
 
         pos := player_head_pos(player, trans)
         ctx.cam.position = pos

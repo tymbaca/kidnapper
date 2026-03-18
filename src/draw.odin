@@ -22,7 +22,7 @@ draw_equipped :: proc(w: ^ecs.World) {
                 case Double_Barrel:
                         model := ctx.models[.Double_Barrel]
 
-                        rot := linalg.quaternion_from_forward_and_up_f32(trans.dir, UP)
+                        rot := linalg.quaternion_from_forward_and_up_f32(player.item_dir, UP)
                         // offset = vec4_to_vec3(rot * vec3_to_vec4(offset))
                         
                         angle, axis := linalg.angle_axis_from_quaternion(rot)
