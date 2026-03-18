@@ -1,11 +1,14 @@
 #+vet explicit-allocators
 package src
 
+import "core:time"
 import "core:log"
 import "core:math/linalg"
 import "core:container/small_array"
 import rl "vendor:raylib"
 import "lib:ecs"
+
+ANIM_FRAME_TIME :: 42 * time.Millisecond // 1/24 seconds
 
 draw_equipped :: proc(w: ^ecs.World) {
         ctx := ctx(w)
@@ -21,14 +24,23 @@ draw_equipped :: proc(w: ^ecs.World) {
                 switch gun in item {
                 case Double_Barrel:
                         model := ctx.models[.Double_Barrel]
+                        anims := ctx.model_anims[.Double_Barrel]
 
                         rot := linalg.quaternion_from_forward_and_up_f32(player.item_dir, UP)
-                        // offset = vec4_to_vec3(rot * vec3_to_vec4(offset))
-                        
                         angle, axis := linalg.angle_axis_from_quaternion(rot)
-                        log.debug("angle", linalg.to_degrees(angle), "axis", axis)
 
-                        rl.DrawModelEx(model, pos, axis, linalg.to_degrees(angle), {1, 1, 1}, rl.WHITE)
+                        log.debug("gun state", gun.state)
+                        switch gun.state {
+                        case .Ready:
+                                rl.UpdateModelAnimation(model, anims[DOUBLE_BARRED_READY_ANIM], 0)
+                                rl.DrawModelEx(model, pos, axis, linalg.to_degrees(angle), {1, 1, 1}, rl.WHITE)
+                        case .Fired:
+                                frame := min(i32(gun.tween.elapsed / ANIM_FRAME_TIME), 1)
+                                rl.UpdateModelAnimation(model, anims[DOUBLE_BARRED_FIRE_ANIM], frame)
+                                rl.DrawModelEx(model, pos, axis, linalg.to_degrees(angle), {1, 1, 1}, rl.WHITE)
+                        case .Reload:
+                                unimplemented()
+                        }
                 }
         }
 }

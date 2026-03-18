@@ -16,7 +16,10 @@ Context :: struct {
         player: ecs.Entity,
         cam:    rl.Camera3D,
         cursor_enabled:  bool,
-        models: [Model_Kind]rl.Model,
+
+        models:            [Model_Kind]rl.Model,
+        model_anim_counts: [Model_Kind]i32,
+        model_anims:       [Model_Kind][^]rl.ModelAnimation,
 }
 
 Model :: struct {
@@ -53,6 +56,8 @@ main :: proc() {
         world: ecs.World
         w := &world
         w.userdata = &_ctx
+
+        ctx := ctx(w)
         
         ecs.init(w, {Transform, Player, Movement, Velocity}, allocator)
         ecs.register(w, debug_system)
@@ -61,17 +66,21 @@ main :: proc() {
         ecs.register(w, velocity_system)
         ecs.register(w, player_direction_system)
         ecs.register(w, player_camera_system)
+        ecs.register(w, player_item_system)
 
         context.temp_allocator = w.frame_allocator
 
         player := ecs.create(w)
         player_component := Player{height = 3}
-        small_array.append(&player_component.items, Double_Barrel{})
+        small_array.append(&player_component.items, Double_Barrel{
+                loaded = 2,
+                ammo = 60,
+        })
         ecs.set(w, player, player_component)
         ecs.set(w, player, Transform{dir = {0, 0, 1}})
         ecs.set(w, player, Velocity{})
         ecs.set(w, player, Movement{speed = PLAYER_SPEED})
-        ctx(w).player = player
+        ctx.player = player
         
         rl.SetConfigFlags({.WINDOW_RESIZABLE})
         rl.InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "kidnapper")
@@ -84,13 +93,19 @@ main :: proc() {
         cam.projection = .PERSPECTIVE
         cam.target = {0, 0, 0}
         cam.position = {0, 0, -5}
-        ctx(w).cam = cam
+        ctx.cam = cam
 
         body := rl.LoadModel("resources/body.obj")
         body_pos: rl.Vector3 = {4, 2, 2}
         gun := rl.LoadModel("resources/gun.obj")
         gun_pos: rl.Vector3
-        ctx(w).models[.Double_Barrel] = rl.LoadModel("resources/gun.m3d")
+        ctx.models = {
+                .Double_Barrel = rl.LoadModel("resources/gun.m3d"),
+        }
+
+        ctx.model_anims = {
+                .Double_Barrel = rl.LoadModelAnimations("resources/gun.m3d", &ctx.model_anim_counts[.Double_Barrel]),
+        }
 
         anim_count: c.int
         anims := rl.LoadModelAnimations("resources/gun.m3d", &anim_count)
@@ -103,15 +118,15 @@ main :: proc() {
 
                 ecs.update(w)
 
-                rl.UpdateModelAnimation(ctx(w).models[.Double_Barrel], anims[anim_index], anim_frame)
+                rl.UpdateModelAnimation(ctx.models[.Double_Barrel], anims[anim_index], anim_frame)
 
                 rl.BeginDrawing()
                 rl.ClearBackground(rl.DARKGRAY)
-                rl.BeginMode3D(ctx(w).cam)
+                rl.BeginMode3D(ctx.cam)
 
                 body.transform = rl.MatrixTranslate(body_pos.x, body_pos.y, body_pos.z)
 
-                rl.DrawModel(ctx(w).models[.Double_Barrel], body_pos, 1, rl.WHITE)
+                rl.DrawModel(ctx.models[.Double_Barrel], body_pos, 1, rl.WHITE)
                 rl.DrawBoundingBox(rl.GetModelBoundingBox(body), rl.RED)
                 rl.DrawModel(gun, gun_pos, 1, rl.WHITE)
                 rl.DrawBoundingBox(rl.GetModelBoundingBox(gun), rl.RED)

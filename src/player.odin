@@ -1,6 +1,8 @@
 #+vet explicit-allocators
 package src
 
+import "lib:mini/tween"
+import "core:reflect"
 import "core:math/ease"
 import "core:container/small_array"
 import "core:time"
@@ -52,7 +54,7 @@ player_camera_system :: proc(w: ^ecs.World) {
         trans := ecs.get(w, ctx.player, Transform)
         player := ecs.get(w, ctx.player, Player)
 
-        log.debug(player.mov_state, "started", time.tick_since(player.mov_state_started), "ago")
+        // log.debug(player.mov_state, "started", time.tick_since(player.mov_state_started), "ago")
         if player.mov_state == .Running {
                 from_start := f32(time.duration_seconds(time.tick_since(player.mov_state_started))) * 10
                 // player.camera_offset.y += math.sin(from_start) * w.delta * 2
@@ -208,4 +210,27 @@ velocity_system :: proc(w: ^ecs.World) {
                 ecs.set(w, e, trans)
                 ecs.set(w, e, vel)
         }
+}
+
+player_item_system :: proc(w: ^ecs.World) {
+        e := ctx(w).player
+        trans := ecs.get(w, e, Transform)
+        player := ecs.get(w, e, Player)
+        movement := ecs.get(w, e, Movement)
+
+        item := small_array.get_ptr(&player.items, player.current_item)
+
+        switch &item in item {
+        case Gun:
+                switch &item in item {
+                case Double_Barrel:
+                        handle_double_barrel(w, &item)
+                }
+        }
+
+        ecs.set(w, e, player)
+}
+
+player_current_item :: proc(player: Player) -> Inventory_Item {
+        return small_array.get(player.items, player.current_item)
 }
