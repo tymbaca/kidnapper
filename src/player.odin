@@ -50,6 +50,8 @@ Movement :: struct {
 
 PLAYER_SPEED :: 70
 
+PLAYER_ITEM_ROTATION_SPEED :: 10
+
 player_camera_system :: proc(w: ^ecs.World) {
         ctx := ctx(w)
         trans := ecs.get(w, ctx.player, Transform)
@@ -65,11 +67,13 @@ player_camera_system :: proc(w: ^ecs.World) {
                 player.camera_offset /= 1 + (8 * w.delta)
         }
 
-        // if player.item_dir == {} {
-        //         player.item_dir = trans.dir
-        // } else {
-        //         player.item_dir = linalg.lerp(player.item_dir, trans.dir, 1 * w.delta)
-        // }
+        if player.item_dir == {} {
+                player.item_dir = trans.dir
+        } 
+
+        if !rl.IsKeyDown(.LEFT_ALT){
+                player.item_dir = linalg.lerp(player.item_dir, trans.dir, PLAYER_ITEM_ROTATION_SPEED * w.delta)
+        }
 
         pos := player_head_pos(player, trans)
         ctx.cam.position = pos

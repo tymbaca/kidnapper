@@ -1,6 +1,7 @@
 #+vet explicit-allocators
 package src
 
+import "core:c"
 import "core:container/small_array"
 import "lib:mini/bvh"
 import "core:log"
@@ -83,10 +84,20 @@ main :: proc() {
         body_pos: rl.Vector3 = {4, 2, 2}
         gun := rl.LoadModel("resources/gun.obj")
         gun_pos: rl.Vector3
-        ctx(w).models[.Double_Barrel] = rl.LoadModel("resources/gun.obj")
+        ctx(w).models[.Double_Barrel] = rl.LoadModel("resources/gun.glb")
+
+        anim_count: c.int
+        anims := rl.LoadModelAnimations("resources/gun.glb", &anim_count)
+
+        anim_index :: 0
+        anim_frame: i32
 
         for !rl.WindowShouldClose() {
+                anim_frame = (anim_frame + 1) % anims[anim_index].frameCount
+
                 ecs.update(w)
+
+                rl.UpdateModelAnimation(ctx(w).models[.Double_Barrel], anims[anim_index], anim_frame)
 
                 rl.BeginDrawing()
                 rl.ClearBackground(rl.DARKGRAY)
@@ -94,7 +105,7 @@ main :: proc() {
 
                 body.transform = rl.MatrixTranslate(body_pos.x, body_pos.y, body_pos.z)
 
-                rl.DrawModel(body, body_pos, 1, rl.WHITE)
+                rl.DrawModel(ctx(w).models[.Double_Barrel], body_pos, 1, rl.WHITE)
                 rl.DrawBoundingBox(rl.GetModelBoundingBox(body), rl.RED)
                 rl.DrawModel(gun, gun_pos, 1, rl.WHITE)
                 rl.DrawBoundingBox(rl.GetModelBoundingBox(gun), rl.RED)
