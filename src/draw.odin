@@ -33,8 +33,8 @@ draw_equipped :: proc(w: ^ecs.World) {
                                 anim := ctx.anims[.Double_Barrel][DOUBLE_BARRED_READY_ANIM]
                                 rl.DrawModelEx(anim[0], pos, axis, linalg.to_degrees(angle), {1, 1, 1}, rl.WHITE)
                         case .Fired:
-                                anim := ctx.anims[.Double_Barrel][DOUBLE_BARRED_READY_ANIM]
-                                frame := rayanim.frame(anim, gun.tween.elapsed, ANIM_FRAME_TIME)
+                                anim := ctx.anims[.Double_Barrel][DOUBLE_BARRED_SHOOT_ANIM]
+                                frame := anim[rayanim.frame(anim, gun.tween.elapsed, ANIM_FRAME_TIME)]
                                 rl.DrawModelEx(frame, pos, axis, linalg.to_degrees(angle), {1, 1, 1}, rl.WHITE)
                         case .Reload:
                                 unimplemented()

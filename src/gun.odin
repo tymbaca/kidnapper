@@ -26,10 +26,10 @@ double_barrel_animations := [Double_Barrel_State]i32 {
         .Reload = 1,
 }
 
-DOUBLE_BARRED_READY_ANIM :: 1
-DOUBLE_BARRED_SHOOT_ANIM :: 0
+DOUBLE_BARRED_READY_ANIM :: 0
+DOUBLE_BARRED_SHOOT_ANIM :: 1
 
-DOUBLE_BARREL_SHOOT_DUR :: 1 * time.Second
+DOUBLE_BARREL_SHOOT_DUR :: 1000 * time.Millisecond
 
 handle_double_barrel :: proc(w: ^ecs.World, gun: ^Double_Barrel) {
         if gun.tween != {} {

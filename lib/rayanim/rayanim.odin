@@ -9,11 +9,11 @@ import "base:runtime"
 import "core:os"
 import rl "vendor:raylib"
 
-frame :: proc(anim: []rl.Model, elapsed: time.Duration, frame_time: time.Duration, loop := false) -> rl.Model {
+frame :: proc(anim: []rl.Model, elapsed: time.Duration, frame_time: time.Duration, loop := false) -> int {
         assert(len(anim) > 0)
 
         if len(anim) == 1 {
-                return anim[0]
+                return 0
         }
 
         frame := int(elapsed / frame_time)
@@ -21,10 +21,10 @@ frame :: proc(anim: []rl.Model, elapsed: time.Duration, frame_time: time.Duratio
         if loop {
                 frame = frame % (len(anim))
         } else {
-                frame = min(frame, len(anim))
+                frame = min(frame, len(anim)-1)
         }
 
-        return anim[frame]
+        return frame
 }
 
 load :: proc(dir_path: string, ext: string, allocator: runtime.Allocator) -> (res: []rl.Model, err: os.Error) {
