@@ -1,6 +1,7 @@
 #+vet explicit-allocators
 package tween
 
+import "core:log"
 import "core:strings"
 import "base:runtime"
 import "core:math/ease"
@@ -25,7 +26,7 @@ new :: proc(
 	lerp: proc(a, b: T, x: f32) -> T,
 	ease := ease.Ease.Linear,
 ) -> Tween(T) {
-	return {dur = dur, initial = initial, final = final, lerp = lerp, callback = nil}
+	return {dur = dur, initial = initial, final = final, ease = ease, lerp = lerp, callback = nil}
 }
 
 new_callback :: proc(
@@ -36,7 +37,7 @@ new_callback :: proc(
 	callback: proc(tw: ^Tween(T)),
 	ease := ease.Ease.Linear,
 ) -> Tween(T) {
-	return {dur = dur, initial = initial, final = final, lerp = lerp, callback = callback}
+	return {dur = dur, initial = initial, final = final, ease = ease, lerp = lerp, callback = callback}
 }
 
 update :: proc(tw: ^Tween($T), delta: time.Duration, ptr: ^T) {
@@ -44,8 +45,9 @@ update :: proc(tw: ^Tween($T), delta: time.Duration, ptr: ^T) {
 
 	elapsed_clamped := min(tw.elapsed, tw.dur)
 	tw.progress = f32(elapsed_clamped) / f32(tw.dur)
-
-        ptr^ = tw.lerp(tw.initial, tw.final, ease.ease(tw.ease, tw.progress))
+        
+        e := ease.ease(tw.ease, tw.progress)
+        ptr^ = tw.lerp(tw.initial, tw.final, e)
 
 	if tw.done {
 		return
@@ -59,8 +61,12 @@ update :: proc(tw: ^Tween($T), delta: time.Duration, ptr: ^T) {
 	}
 }
 
-loop :: proc(tw: ^Tween($T)) {
-        tw.final, tw.initial = tw.initial, tw.final
+reset :: proc(tw: ^Tween($T)) {
         tw.done = false
         tw.elapsed = 0
+}
+
+loop :: proc(tw: ^Tween($T)) {
+        reset(tw)
+        tw.final, tw.initial = tw.initial, tw.final
 }

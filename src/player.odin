@@ -50,8 +50,9 @@ player_camera_system :: proc(w: ^ecs.World) {
         trans := ecs.get(w, ctx.player, Transform)
         player := ecs.get(w, ctx.player, Player)
 
-        CAMERA_BOB_HIGH :: vec3{0, 1, 0}
-        CAMERA_BOB_LOW :: vec3{0, -1, 0}
+        CAMERA_BOB_AMOUNT :: 2
+        CAMERA_BOB_HIGH :: vec3{0, CAMERA_BOB_AMOUNT, 0}
+        CAMERA_BOB_LOW  :: vec3{0, -CAMERA_BOB_AMOUNT, 0}
         CAMERA_BOB_ZERO :: vec3{0, 0, 0}
         CAMERA_BOB_DUR :: 500*time.Millisecond
 
@@ -62,18 +63,16 @@ player_camera_system :: proc(w: ^ecs.World) {
         if player.mov_state == .Running {
                 if player.camera_offset_tween == {} || player.camera_offset_tween.done {
                         go_up :: proc(tw: ^tween.Tween(vec3)) {
+                                tween.reset(tw)
                                 tw.initial = CAMERA_BOB_LOW
                                 tw.final = CAMERA_BOB_HIGH
-                                tw.done = false
-                                tw.elapsed = 0
                                 tw.callback = go_down
                                 log.debug("RUNNING tween: UP ended, callback set to DOWN")
                         }
                         go_down :: proc(tw: ^tween.Tween(vec3)) {
+                                tween.reset(tw)
                                 tw.initial = CAMERA_BOB_HIGH
                                 tw.final = CAMERA_BOB_LOW
-                                tw.done = false
-                                tw.elapsed = 0
                                 tw.callback = go_up
                                 log.debug("RUNNING tween: DOWN ended, callback set to UP")
                         }
