@@ -1,6 +1,8 @@
 #+vet explicit-allocators
 package src
 
+import "base:intrinsics"
+import "lib:rayanim"
 import "core:c"
 import "core:container/small_array"
 import "lib:mini/bvh"
@@ -19,8 +21,10 @@ Context :: struct {
         cam:    rl.Camera3D,
         cursor_enabled:  bool,
 
-        models:            [Model_Kind]rl.Model,
+        anims: [Model_Kind][ANIMS_PER_MODEL][]rl.Model,
 }
+
+ANIMS_PER_MODEL :: 32
 
 Model :: struct {
         model: rl.Model, // shared raylib model
@@ -95,8 +99,12 @@ main :: proc() {
         cam.position = {0, 0, -5}
         ctx.cam = cam
 
-        ctx.models = {
-                .Double_Barrel = rl.LoadModel("resources/gun/shoot/shoot0044.obj"),
+        
+        ctx.anims = {
+                .Double_Barrel = {
+                        DOUBLE_BARRED_READY_ANIM = must(rayanim.load("resources/gun/ready", ".obj", allocator)),
+                        DOUBLE_BARRED_SHOOT_ANIM = must(rayanim.load("resources/gun/shoot", ".obj", allocator)),
+                }
         }
 
         for !rl.WindowShouldClose() {
@@ -105,11 +113,12 @@ main :: proc() {
                 rl.BeginDrawing()
                 rl.ClearBackground(rl.DARKGRAY)
                 rl.BeginMode3D(ctx.cam)
+                
+                idle := ctx.anims[.Double_Barrel][DOUBLE_BARRED_READY_ANIM][0]
+                rl.DrawModel(idle, {1, 1, 1}, 1, rl.WHITE)
+                rl.DrawModel(idle, {2, 1, 1}, 1, rl.WHITE)
 
-                rl.DrawModel(ctx.models[.Double_Barrel], {1, 1, 1}, 1, rl.WHITE)
-                rl.DrawModel(ctx.models[.Double_Barrel], {2, 1, 1}, 1, rl.WHITE)
-
-                rl.DrawBoundingBox(rl.GetModelBoundingBox(ctx.models[.Double_Barrel]), rl.RED)
+                rl.DrawBoundingBox(rl.GetModelBoundingBox(idle), rl.RED)
 
                 draw_equipped(w)
 
@@ -120,4 +129,12 @@ main :: proc() {
                 rl.DrawFPS(10, 10)
                 rl.EndDrawing()
         }
+}
+
+must :: proc(val: $T, err: $E, loc := #caller_location) -> T where intrinsics.type_is_enum(E) || intrinsics.type_is_union(E) {
+        if err != {} {
+                log.panic(err)
+        }
+
+        return val
 }

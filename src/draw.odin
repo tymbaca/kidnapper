@@ -1,6 +1,7 @@
 #+vet explicit-allocators
 package src
 
+import "lib:rayanim"
 import "core:time"
 import "core:log"
 import "core:math/linalg"
@@ -23,21 +24,18 @@ draw_equipped :: proc(w: ^ecs.World) {
         case Gun:
                 switch gun in item {
                 case Double_Barrel:
-                        model := ctx.models[.Double_Barrel]
-
                         rot := linalg.quaternion_from_forward_and_up_f32(player.item_dir, UP)
                         angle, axis := linalg.angle_axis_from_quaternion(rot)
 
                         log.debug("gun state", gun.state)
                         switch gun.state {
                         case .Ready:
-                                rl.DrawModelEx(model, pos, axis, linalg.to_degrees(angle), {1, 1, 1}, rl.WHITE)
+                                anim := ctx.anims[.Double_Barrel][DOUBLE_BARRED_READY_ANIM]
+                                rl.DrawModelEx(anim[0], pos, axis, linalg.to_degrees(angle), {1, 1, 1}, rl.WHITE)
                         case .Fired:
-                                // frame := i32(gun.tween.elapsed / ANIM_FRAME_TIME)
-                                // if frame > anims[DOUBLE_BARRED_FIRE_ANIM].frameCount {
-                                //         frame = 0
-                                // }
-                                rl.DrawModelEx(model, pos, axis, linalg.to_degrees(angle), {1, 1, 1}, rl.WHITE)
+                                anim := ctx.anims[.Double_Barrel][DOUBLE_BARRED_READY_ANIM]
+                                frame := rayanim.frame(anim, gun.tween.elapsed, ANIM_FRAME_TIME)
+                                rl.DrawModelEx(frame, pos, axis, linalg.to_degrees(angle), {1, 1, 1}, rl.WHITE)
                         case .Reload:
                                 unimplemented()
                         }

@@ -27,9 +27,9 @@ double_barrel_animations := [Double_Barrel_State]i32 {
 }
 
 DOUBLE_BARRED_READY_ANIM :: 1
-DOUBLE_BARRED_FIRE_ANIM :: 0
+DOUBLE_BARRED_SHOOT_ANIM :: 0
 
-DOUBLE_BARREL_FIRE_DUR :: 1 * time.Second
+DOUBLE_BARREL_SHOOT_DUR :: 1 * time.Second
 
 handle_double_barrel :: proc(w: ^ecs.World, gun: ^Double_Barrel) {
         if gun.tween != {} {
@@ -41,7 +41,7 @@ handle_double_barrel :: proc(w: ^ecs.World, gun: ^Double_Barrel) {
                 gun.state = .Fired
                 // TODO: check collisions, do damage and stuff
 
-                gun.tween = tween.new(DOUBLE_BARREL_FIRE_DUR, proc(gun: ^Double_Barrel) {
+                gun.tween = tween.new(DOUBLE_BARREL_SHOOT_DUR, proc(gun: ^Double_Barrel) {
                         gun.state = .Ready
                         gun.tween = {}
                 })
