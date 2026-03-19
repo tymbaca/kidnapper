@@ -17,6 +17,7 @@ draw_equipped :: proc(w: ^ecs.World) {
         trans := ecs.get(w, ctx.player, Transform)
 
         pos := player_head_pos(player, trans)
+        pos += player.item_offset
 
         item := small_array.get(player.items, player.current_item)
         rot := linalg.quaternion_from_forward_and_up_f32(player.item_dir, UP)

@@ -19,6 +19,7 @@ Player :: struct {
         items:        small_array.Small_Array(20, Inventory_Item),
         current_item: int,
         item_dir:     vec3, // for smooth animation
+        item_offset:  vec3, // WARN: player rotation not applied
 }
 
 Inventory_Item :: union {
@@ -55,6 +56,7 @@ player_camera_system :: proc(w: ^ecs.World) {
         } else {
                 player.camera_offset /= 1 + (8 * w.delta)
         }
+        player.item_offset = player.camera_offset / 7
 
         if player.item_dir == {} {
                 player.item_dir = trans.dir
