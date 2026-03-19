@@ -61,6 +61,13 @@ update :: proc(tw: ^Tween($T), delta: time.Duration, ptr: ^T) {
 	}
 }
 
+change_dur :: proc(tw: ^Tween($T), dur: time.Duration) {
+        change := f32(dur) / f32(tw.dur)
+        tw.dur = dur
+        tw.elapsed = time.Duration(f32(tw.elapsed) * change)
+        tw.progress = tw.progress * change
+}
+
 reset :: proc(tw: ^Tween($T)) {
         tw.done = false
         tw.elapsed = 0

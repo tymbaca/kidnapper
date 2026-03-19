@@ -60,7 +60,7 @@ player_camera_system :: proc(w: ^ecs.World) {
 
         if player.camera_offset_tween != {} {
                 tween.update(&player.camera_offset_tween, w.delta_dur, &player.camera_offset)
-                player.camera_offset_tween.dur = CAMERA_BOB_DUR if !player.is_sprinting else CAMERA_BOB_SPRINT_DUR
+                tween.change_dur(&player.camera_offset_tween, CAMERA_BOB_DUR if !player.is_sprinting else CAMERA_BOB_SPRINT_DUR)
         }
 
         if player.mov_state == .Running {
