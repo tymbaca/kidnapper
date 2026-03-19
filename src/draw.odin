@@ -19,26 +19,14 @@ draw_equipped :: proc(w: ^ecs.World) {
         pos := player_head_pos(player, trans)
 
         item := small_array.get(player.items, player.current_item)
+        rot := linalg.quaternion_from_forward_and_up_f32(player.item_dir, UP)
+        angle, axis := linalg.angle_axis_from_quaternion(rot)
 
         switch item in item {
         case Gun:
                 switch gun in item {
                 case Double_Barrel:
-                        rot := linalg.quaternion_from_forward_and_up_f32(player.item_dir, UP)
-                        angle, axis := linalg.angle_axis_from_quaternion(rot)
-
-                        log.debug("gun state", gun.state)
-                        switch gun.state {
-                        case .Ready:
-                                anim := ctx.anims[.Double_Barrel][DOUBLE_BARRED_READY_ANIM]
-                                rl.DrawModelEx(anim[0], pos, axis, linalg.to_degrees(angle), {1, 1, 1}, rl.WHITE)
-                        case .Fired:
-                                anim := ctx.anims[.Double_Barrel][DOUBLE_BARRED_SHOOT_ANIM]
-                                frame := anim[rayanim.frame(anim, gun.tween.elapsed, ANIM_FRAME_TIME)]
-                                rl.DrawModelEx(frame, pos, axis, linalg.to_degrees(angle), {1, 1, 1}, rl.WHITE)
-                        case .Reload:
-                                unimplemented()
-                        }
+                        double_barrel_draw(ctx, gun, pos, angle, axis)
                 }
         }
 }

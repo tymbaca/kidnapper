@@ -1,13 +1,9 @@
 #+vet explicit-allocators
 package src
 
-import "lib:mini/tween"
-import "core:reflect"
-import "core:math/ease"
 import "core:container/small_array"
 import "core:time"
 import "core:math"
-import "core:log"
 import "core:math/linalg"
 import "lib:ecs"
 import rl "vendor:raylib"
@@ -27,10 +23,6 @@ Player :: struct {
 
 Inventory_Item :: union {
         Gun,
-}
-
-Gun :: union {
-        Double_Barrel,
 }
 
 Movement_State :: enum {

@@ -77,7 +77,7 @@ main :: proc() {
         player := ecs.create(w)
         player_component := Player{height = 3}
         small_array.append(&player_component.items, Double_Barrel{
-                loaded = 2,
+                loaded = 99999999,
                 ammo = 60,
         })
         ecs.set(w, player, player_component)
