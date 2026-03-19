@@ -11,6 +11,8 @@ import rl "vendor:raylib"
 
 SCREEN_WIDTH :: 2800
 SCREEN_HEIGHT :: 1000
+// SCREEN_WIDTH :: 1200
+// SCREEN_HEIGHT :: 600
 
 Context :: struct {
         player: ecs.Entity,
@@ -95,14 +97,9 @@ main :: proc() {
         cam.position = {0, 0, -5}
         ctx.cam = cam
 
-        body := rl.LoadModel("resources/body.obj")
-        body_pos: rl.Vector3 = {4, 2, 2}
-        gun := rl.LoadModel("resources/gun.obj")
-        gun_pos: rl.Vector3
         ctx.models = {
                 .Double_Barrel = rl.LoadModel("resources/gun.m3d"),
         }
-
         ctx.model_anims = {
                 .Double_Barrel = rl.LoadModelAnimations("resources/gun.m3d", &ctx.model_anim_counts[.Double_Barrel]),
         }
@@ -118,21 +115,18 @@ main :: proc() {
 
                 ecs.update(w)
 
-                // BUG: 
-                // rl.UpdateModelAnimation(ctx.models[.Double_Barrel], anims[anim_index], anim_frame)
-
                 rl.BeginDrawing()
                 rl.ClearBackground(rl.DARKGRAY)
                 rl.BeginMode3D(ctx.cam)
 
-                body.transform = rl.MatrixTranslate(body_pos.x, body_pos.y, body_pos.z)
+                rl.UpdateModelAnimation(ctx.models[.Double_Barrel], anims[DOUBLE_BARRED_READY_ANIM], 0)
+                rl.DrawModel(ctx.models[.Double_Barrel], {1, 1, 1}, 1, rl.WHITE)
+                rl.UpdateModelAnimation(ctx.models[.Double_Barrel], anims[DOUBLE_BARRED_FIRE_ANIM], anim_frame)
+                rl.DrawModel(ctx.models[.Double_Barrel], {2, 1, 1}, 1, rl.WHITE)
 
-                rl.DrawModel(ctx.models[.Double_Barrel], body_pos, 1, rl.WHITE)
-                rl.DrawBoundingBox(rl.GetModelBoundingBox(body), rl.RED)
-                rl.DrawModel(gun, gun_pos, 1, rl.WHITE)
-                rl.DrawBoundingBox(rl.GetModelBoundingBox(gun), rl.RED)
+                rl.DrawBoundingBox(rl.GetModelBoundingBox(ctx.models[.Double_Barrel]), rl.RED)
 
-                draw_equipped(w)
+                // draw_equipped(w)
 
                 rl.DrawGrid(30, 5)
                 rl.DrawCapsuleWires({0, 0, 0}, {4, 4, 4}, 1, 12, 9, rl.GREEN)
