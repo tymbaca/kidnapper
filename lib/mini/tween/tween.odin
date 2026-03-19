@@ -20,23 +20,23 @@ Tween :: struct($T: typeid) {
 
 new :: proc(
 	dur: time.Duration,
-	inital: $T,
+	initial: $T,
 	final: T,
 	lerp: proc(a, b: T, x: f32) -> T,
 	ease := ease.Ease.Linear,
 ) -> Tween(T) {
-	return {dur = dur, initial = inital, final = final, lerp = lerp, callback = nil}
+	return {dur = dur, initial = initial, final = final, lerp = lerp, callback = nil}
 }
 
 new_callback :: proc(
 	dur: time.Duration,
-	inital: $T,
+	initial: $T,
 	final: T,
 	lerp: proc(a, b: T, x: f32) -> T,
 	callback: proc(tw: ^Tween(T)),
 	ease := ease.Ease.Linear,
 ) -> Tween(T) {
-	return {dur = dur, initial = inital, final = final, lerp = lerp, callback = callback}
+	return {dur = dur, initial = initial, final = final, lerp = lerp, callback = callback}
 }
 
 update :: proc(tw: ^Tween($T), delta: time.Duration, ptr: ^T) {

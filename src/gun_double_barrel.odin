@@ -53,7 +53,7 @@ handle_double_barrel :: proc(w: ^ecs.World, gun: ^Double_Barrel) {
 }
 
 double_barrel_draw :: proc(ctx: ^Context, gun: Double_Barrel, pos: vec3, angle: f32, axis: vec3) {
-        log.debug("double_barrel state", gun.state)
+        // log.debug("double_barrel state", gun.state)
 
         switch gun.state {
         case .Ready:
