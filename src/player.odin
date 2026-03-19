@@ -49,14 +49,16 @@ player_camera_system :: proc(w: ^ecs.World) {
         trans := ecs.get(w, ctx.player, Transform)
         player := ecs.get(w, ctx.player, Player)
 
-        // log.debug(player.mov_state, "started", time.tick_since(player.mov_state_started), "ago")
-        if player.mov_state == .Running {
-                if player.camera_offset_tween != {} {
-                        tween.update(&player.camera_offset_tween, w.delta_dur, &player.camera_offset)
-                } else {
-                        CAMERA_BOB_HIGH :: vec3{0, 1, 0}
-                        CAMERA_BOB_LOW :: vec3{0, 1, 0}
+        CAMERA_BOB_HIGH :: vec3{0, 1, 0}
+        CAMERA_BOB_LOW :: vec3{0, 1, 0}
+        CAMERA_BOB_ZERO :: vec3{0, 0, 0}
 
+        if player.camera_offset_tween != {} {
+                tween.update(&player.camera_offset_tween, w.delta_dur, &player.camera_offset)
+        }
+
+        if player.mov_state == .Running {
+                if player.camera_offset_tween == {} {
                         up :: proc(tw: ^tween.Tween(vec3)) {
                                 tw.final = CAMERA_BOB_LOW
                                 tw.initial = CAMERA_BOB_HIGH
@@ -72,10 +74,10 @@ player_camera_system :: proc(w: ^ecs.World) {
                                 tw.callback = up
                         }
 
-                        player.camera_offset_tween = tween.new(100*time.Millisecond, player.camera_offset, CAMERA_BOB_HIGH, vec3_lerp, callback = down)
+                        player.camera_offset_tween = tween.new_callback(100*time.Millisecond, player.camera_offset, CAMERA_BOB_HIGH, vec3_lerp, callback = down)
                 }
         } else {
-                player.camera_offset /= 1 + (8 * w.delta)
+                player.camera_offset_tween = tween.new(100*time.Millisecond, player.camera_offset, CAMERA_BOB_ZERO, vec3_lerp)
         }
         player.item_offset = player.camera_offset / 7
 

@@ -1,6 +1,8 @@
 #+vet explicit-allocators
 package tween
 
+import "core:strings"
+import "base:runtime"
 import "core:math/ease"
 import "core:math/linalg"
 import "core:time"
@@ -22,7 +24,17 @@ new :: proc(
 	final: T,
 	lerp: proc(a, b: T, x: f32) -> T,
 	ease := ease.Ease.Linear,
-	callback: proc(tw: ^Tween(T)) = nil,
+) -> Tween(T) {
+	return {dur = dur, initial = inital, final = final, lerp = lerp, callback = nil}
+}
+
+new_callback :: proc(
+	dur: time.Duration,
+	inital: $T,
+	final: T,
+	lerp: proc(a, b: T, x: f32) -> T,
+	callback: proc(tw: ^Tween(T)),
+	ease := ease.Ease.Linear,
 ) -> Tween(T) {
 	return {dur = dur, initial = inital, final = final, lerp = lerp, callback = callback}
 }
@@ -41,7 +53,9 @@ update :: proc(tw: ^Tween($T), delta: time.Duration, ptr: ^T) {
 
 	if tw.elapsed >= tw.dur {
 		tw.done = true
-		tw.callback(tw)
+                if tw.callback != nil {
+                        tw.callback(tw)
+                }
 	}
 }
 
