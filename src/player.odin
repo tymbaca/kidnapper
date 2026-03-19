@@ -18,6 +18,7 @@ Player :: struct {
 
         height: f32,
         mov_state:  Movement_State,
+        is_sprinting: bool,
 
         items:        small_array.Small_Array(20, Inventory_Item),
         current_item: int,
@@ -50,14 +51,16 @@ player_camera_system :: proc(w: ^ecs.World) {
         trans := ecs.get(w, ctx.player, Transform)
         player := ecs.get(w, ctx.player, Player)
 
-        CAMERA_BOB_AMOUNT :: 2
+        CAMERA_BOB_AMOUNT :: 0.2
         CAMERA_BOB_HIGH :: vec3{0, CAMERA_BOB_AMOUNT, 0}
         CAMERA_BOB_LOW  :: vec3{0, -CAMERA_BOB_AMOUNT, 0}
         CAMERA_BOB_ZERO :: vec3{0, 0, 0}
-        CAMERA_BOB_DUR :: 500*time.Millisecond
+        CAMERA_BOB_DUR :: 500 * time.Millisecond
+        CAMERA_BOB_SPRINT_DUR :: 250 * time.Millisecond
 
         if player.camera_offset_tween != {} {
                 tween.update(&player.camera_offset_tween, w.delta_dur, &player.camera_offset)
+                player.camera_offset_tween.dur = CAMERA_BOB_DUR if !player.is_sprinting else CAMERA_BOB_SPRINT_DUR
         }
 
         if player.mov_state == .Running {
@@ -76,7 +79,7 @@ player_camera_system :: proc(w: ^ecs.World) {
                                 tw.callback = go_up
                                 log.debug("RUNNING tween: DOWN ended, callback set to UP")
                         }
-
+                        
                         player.camera_offset_tween = tween.new_callback(CAMERA_BOB_DUR, player.camera_offset, CAMERA_BOB_HIGH, vec3_lerp, callback = go_down, ease = .Sine_In_Out)
                         log.debug("RUNNING tween created")
                 }
@@ -195,6 +198,9 @@ player_movement_system :: proc(w: ^ecs.World) {
 
         if rl.IsKeyDown(.W) && rl.IsKeyDown(.LEFT_SHIFT) {
                 mov *= 2
+                player.is_sprinting = true
+        } else {
+                player.is_sprinting = false
         }
 
         movement.desired = mov
