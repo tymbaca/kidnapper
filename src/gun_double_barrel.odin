@@ -14,7 +14,7 @@ Double_Barrel :: struct {
         ammo: int,
 
         state: Double_Barrel_State,
-        tween: callback.Callback(^Double_Barrel),
+        state_cb: callback.Callback(^Double_Barrel),
 }
 
 Double_Barrel_State :: enum {
@@ -36,18 +36,18 @@ DOUBLE_BARREL_SHOOT_DUR :: 100 * time.Millisecond
 DOUBLE_BARREL_SHOOT_ANIM_DUR :: 1000 * time.Millisecond
 
 handle_double_barrel :: proc(w: ^ecs.World, gun: ^Double_Barrel) {
-        if gun.tween != {} {
-                callback.update(&gun.tween, w.delta_dur, gun)
+        if gun.state_cb != {} {
+                callback.update(&gun.state_cb, w.delta_dur, gun)
         }
 
-        if rl.IsMouseButtonPressed(.LEFT) && gun.loaded > 0 && (gun.state == .Ready || gun.state == .Fired && gun.tween.elapsed > DOUBLE_BARREL_SHOOT_DUR) {
+        if rl.IsMouseButtonPressed(.LEFT) && gun.loaded > 0 && (gun.state == .Ready || gun.state == .Fired && gun.state_cb.elapsed > DOUBLE_BARREL_SHOOT_DUR) {
                 gun.loaded -= 1
                 gun.state = .Fired
                 // TODO: check collisions, do damage and stuff
 
-                gun.tween = callback.new(DOUBLE_BARREL_SHOOT_ANIM_DUR, proc(gun: ^Double_Barrel) {
+                gun.state_cb = callback.new(DOUBLE_BARREL_SHOOT_ANIM_DUR, proc(gun: ^Double_Barrel) {
                         gun.state = .Ready
-                        gun.tween = {}
+                        gun.state_cb = {}
                 })
         }
 }
@@ -61,7 +61,7 @@ double_barrel_draw :: proc(ctx: ^Context, gun: Double_Barrel, pos: vec3, angle: 
                 rl.DrawModelEx(anim[0], pos, axis, linalg.to_degrees(angle), {1, 1, 1}, rl.WHITE)
         case .Fired:
                 anim := ctx.anims[.Double_Barrel][DOUBLE_BARRED_SHOOT_ANIM]
-                frame := anim[rayanim.frame(anim, gun.tween.elapsed, ANIM_FRAME_TIME)]
+                frame := anim[rayanim.frame(anim, gun.state_cb.elapsed, ANIM_FRAME_TIME)]
                 rl.DrawModelEx(frame, pos, axis, linalg.to_degrees(angle), {1, 1, 1}, rl.WHITE)
         case .Reload:
                 unimplemented()

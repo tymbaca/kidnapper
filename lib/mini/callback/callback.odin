@@ -4,28 +4,25 @@ package callback
 import "core:time"
 
 Callback :: struct($T: typeid) {
-        dur: time.Duration,
-        elapsed: time.Duration,
-        callback: proc(userdata: T),
-        done: bool,
+	dur:      time.Duration,
+	elapsed:  time.Duration,
+	callback: proc(userdata: T),
+	done:     bool,
 }
 
 new :: proc(dur: time.Duration, callback: proc(userdata: $T)) -> Callback(T) {
-        return {
-                dur = dur,
-                callback = callback,
-        }
+	return {dur = dur, callback = callback}
 }
 
-update :: proc(tw: ^Callback($T), delta: time.Duration, userdata: T) {
-        tw.elapsed += delta
+update :: proc(cb: ^Callback($T), delta: time.Duration, userdata: T) {
+	cb.elapsed += delta
 
-        if tw.done {
-                return
-        }
+	if cb.done {
+		return
+	}
 
-        if tw.elapsed >= tw.dur {
-                tw.callback(userdata)
-                tw.done = true
-        }
+	if cb.elapsed >= cb.dur {
+		cb.done = true
+		cb.callback(userdata)
+	}
 }

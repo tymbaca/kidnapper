@@ -1,6 +1,7 @@
 #+vet explicit-allocators
 package src
 
+import "lib:mini/tween"
 import "core:container/small_array"
 import "core:time"
 import "core:math"
@@ -12,9 +13,10 @@ UP :: vec3{0, 1, 0}
 
 Player :: struct {
         camera_offset: vec3,
+        camera_offset_tween: tween.Tween(vec3),
+
         height: f32,
         mov_state:  Movement_State,
-        mov_state_started: time.Tick,
 
         items:        small_array.Small_Array(20, Inventory_Item),
         current_item: int,
@@ -49,10 +51,29 @@ player_camera_system :: proc(w: ^ecs.World) {
 
         // log.debug(player.mov_state, "started", time.tick_since(player.mov_state_started), "ago")
         if player.mov_state == .Running {
-                from_start := f32(time.duration_seconds(time.tick_since(player.mov_state_started))) * 10
-                // player.camera_offset.y += math.sin(from_start) * w.delta * 2
-                player.camera_offset = right(trans.dir) * (math.sin(from_start) * 0.03)
-                player.camera_offset += UP * (math.sin(from_start) * 0.1)
+                if player.camera_offset_tween != {} {
+                        tween.update(&player.camera_offset_tween, w.delta_dur, &player.camera_offset)
+                } else {
+                        CAMERA_BOB_HIGH :: vec3{0, 1, 0}
+                        CAMERA_BOB_LOW :: vec3{0, 1, 0}
+
+                        up :: proc(tw: ^tween.Tween(vec3)) {
+                                tw.final = CAMERA_BOB_LOW
+                                tw.initial = CAMERA_BOB_HIGH
+                                tw.done = false
+                                tw.elapsed = 0
+                                tw.callback = down
+                        }
+                        down :: proc(tw: ^tween.Tween(vec3)) {
+                                tw.final = CAMERA_BOB_HIGH
+                                tw.initial = CAMERA_BOB_LOW
+                                tw.done = false
+                                tw.elapsed = 0
+                                tw.callback = up
+                        }
+
+                        player.camera_offset_tween = tween.new(100*time.Millisecond, player.camera_offset, CAMERA_BOB_HIGH, vec3_lerp, callback = down)
+                }
         } else {
                 player.camera_offset /= 1 + (8 * w.delta)
         }
@@ -171,11 +192,9 @@ player_movement_system :: proc(w: ^ecs.World) {
 
         if mov == {} && player.mov_state != .Idle {
                 player.mov_state = .Idle
-                player.mov_state_started = time.tick_now()
         }
         if mov != {} && player.mov_state != .Running {
                 player.mov_state = .Running
-                player.mov_state_started = time.tick_now()
         }
 
         ecs.set(w, e, movement)
