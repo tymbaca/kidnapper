@@ -20,8 +20,6 @@ Context :: struct {
         cursor_enabled:  bool,
 
         models:            [Model_Kind]rl.Model,
-        model_anim_counts: [Model_Kind]i32,
-        model_anims:       [Model_Kind][^]rl.ModelAnimation,
 }
 
 Model :: struct {
@@ -98,35 +96,22 @@ main :: proc() {
         ctx.cam = cam
 
         ctx.models = {
-                .Double_Barrel = rl.LoadModel("resources/gun.m3d"),
+                .Double_Barrel = rl.LoadModel("resources/gun/shoot/shoot0044.obj"),
         }
-        ctx.model_anims = {
-                .Double_Barrel = rl.LoadModelAnimations("resources/gun.m3d", &ctx.model_anim_counts[.Double_Barrel]),
-        }
-
-        anim_count: c.int
-        anims := rl.LoadModelAnimations("resources/gun.m3d", &anim_count)
-
-        anim_index :: 0
-        anim_frame: i32
 
         for !rl.WindowShouldClose() {
-                anim_frame = (anim_frame + 1) % anims[anim_index].frameCount
-
                 ecs.update(w)
 
                 rl.BeginDrawing()
                 rl.ClearBackground(rl.DARKGRAY)
                 rl.BeginMode3D(ctx.cam)
 
-                rl.UpdateModelAnimation(ctx.models[.Double_Barrel], anims[DOUBLE_BARRED_READY_ANIM], 0)
                 rl.DrawModel(ctx.models[.Double_Barrel], {1, 1, 1}, 1, rl.WHITE)
-                rl.UpdateModelAnimation(ctx.models[.Double_Barrel], anims[DOUBLE_BARRED_FIRE_ANIM], anim_frame)
                 rl.DrawModel(ctx.models[.Double_Barrel], {2, 1, 1}, 1, rl.WHITE)
 
                 rl.DrawBoundingBox(rl.GetModelBoundingBox(ctx.models[.Double_Barrel]), rl.RED)
 
-                // draw_equipped(w)
+                draw_equipped(w)
 
                 rl.DrawGrid(30, 5)
                 rl.DrawCapsuleWires({0, 0, 0}, {4, 4, 4}, 1, 12, 9, rl.GREEN)

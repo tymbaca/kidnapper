@@ -24,7 +24,6 @@ draw_equipped :: proc(w: ^ecs.World) {
                 switch gun in item {
                 case Double_Barrel:
                         model := ctx.models[.Double_Barrel]
-                        anims := ctx.model_anims[.Double_Barrel]
 
                         rot := linalg.quaternion_from_forward_and_up_f32(player.item_dir, UP)
                         angle, axis := linalg.angle_axis_from_quaternion(rot)
@@ -32,14 +31,12 @@ draw_equipped :: proc(w: ^ecs.World) {
                         log.debug("gun state", gun.state)
                         switch gun.state {
                         case .Ready:
-                                rl.UpdateModelAnimation(model, anims[DOUBLE_BARRED_READY_ANIM], 0)
                                 rl.DrawModelEx(model, pos, axis, linalg.to_degrees(angle), {1, 1, 1}, rl.WHITE)
                         case .Fired:
-                                frame := i32(gun.tween.elapsed / ANIM_FRAME_TIME)
-                                if frame > anims[DOUBLE_BARRED_FIRE_ANIM].frameCount {
-                                        frame = 0
-                                }
-                                rl.UpdateModelAnimation(model, anims[DOUBLE_BARRED_FIRE_ANIM], frame)
+                                // frame := i32(gun.tween.elapsed / ANIM_FRAME_TIME)
+                                // if frame > anims[DOUBLE_BARRED_FIRE_ANIM].frameCount {
+                                //         frame = 0
+                                // }
                                 rl.DrawModelEx(model, pos, axis, linalg.to_degrees(angle), {1, 1, 1}, rl.WHITE)
                         case .Reload:
                                 unimplemented()
