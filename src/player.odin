@@ -53,7 +53,7 @@ player_camera_system :: proc(w: ^ecs.World) {
         CAMERA_BOB_HIGH :: vec3{0, 1, 0}
         CAMERA_BOB_LOW :: vec3{0, -1, 0}
         CAMERA_BOB_ZERO :: vec3{0, 0, 0}
-        CAMERA_BOB_DUR :: 200*time.Millisecond
+        CAMERA_BOB_DUR :: 500*time.Millisecond
 
         if player.camera_offset_tween != {} {
                 tween.update(&player.camera_offset_tween, w.delta_dur, &player.camera_offset)
@@ -61,29 +61,29 @@ player_camera_system :: proc(w: ^ecs.World) {
 
         if player.mov_state == .Running {
                 if player.camera_offset_tween == {} || player.camera_offset_tween.done {
-                        up :: proc(tw: ^tween.Tween(vec3)) {
-                                tw.final = CAMERA_BOB_LOW
-                                tw.initial = CAMERA_BOB_HIGH
+                        go_up :: proc(tw: ^tween.Tween(vec3)) {
+                                tw.initial = CAMERA_BOB_LOW
+                                tw.final = CAMERA_BOB_HIGH
                                 tw.done = false
                                 tw.elapsed = 0
-                                tw.callback = down
+                                tw.callback = go_down
                                 log.debug("RUNNING tween: UP ended, callback set to DOWN")
                         }
-                        down :: proc(tw: ^tween.Tween(vec3)) {
-                                tw.final = CAMERA_BOB_HIGH
-                                tw.initial = CAMERA_BOB_LOW
+                        go_down :: proc(tw: ^tween.Tween(vec3)) {
+                                tw.initial = CAMERA_BOB_HIGH
+                                tw.final = CAMERA_BOB_LOW
                                 tw.done = false
                                 tw.elapsed = 0
-                                tw.callback = up
+                                tw.callback = go_up
                                 log.debug("RUNNING tween: DOWN ended, callback set to UP")
                         }
 
-                        player.camera_offset_tween = tween.new_callback(CAMERA_BOB_DUR, player.camera_offset, CAMERA_BOB_HIGH, vec3_lerp, callback = down)
+                        player.camera_offset_tween = tween.new_callback(CAMERA_BOB_DUR, player.camera_offset, CAMERA_BOB_HIGH, vec3_lerp, callback = go_down, ease = .Sine_In_Out)
                         log.debug("RUNNING tween created")
                 }
         } else {
                 if player.camera_offset != CAMERA_BOB_ZERO && player.camera_offset_tween.final != CAMERA_BOB_ZERO {
-                        player.camera_offset_tween = tween.new(100*time.Millisecond, player.camera_offset, CAMERA_BOB_ZERO, vec3_lerp)
+                        player.camera_offset_tween = tween.new(CAMERA_BOB_DUR, player.camera_offset, CAMERA_BOB_ZERO, vec3_lerp, ease = .Sine_In_Out)
                         log.debug("IDLE tween created")
                 }
         }
