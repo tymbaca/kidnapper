@@ -56,11 +56,11 @@ player_camera_system :: proc(w: ^ecs.World) {
         CAMERA_BOB_LOW  :: vec3{0, -CAMERA_BOB_AMOUNT, 0}
         CAMERA_BOB_ZERO :: vec3{0, 0, 0}
         CAMERA_BOB_DUR :: 500 * time.Millisecond
-        CAMERA_BOB_SPRINT_DUR :: 250 * time.Millisecond
+        CAMERA_BOB_SPRINT_DUR :: 350 * time.Millisecond
+        CAMERA_BOB_STOP_DUR :: 400 * time.Millisecond
 
         if player.camera_offset_tween != {} {
                 tween.update(&player.camera_offset_tween, w.delta_dur, &player.camera_offset)
-                tween.change_dur(&player.camera_offset_tween, CAMERA_BOB_DUR if !player.is_sprinting else CAMERA_BOB_SPRINT_DUR)
         }
 
         if player.mov_state == .Running {
@@ -70,22 +70,24 @@ player_camera_system :: proc(w: ^ecs.World) {
                                 tw.initial = CAMERA_BOB_LOW
                                 tw.final = CAMERA_BOB_HIGH
                                 tw.callback = go_down
-                                log.debug("RUNNING tween: UP ended, callback set to DOWN")
+                                log.debug("RUNNING tween: DOWN ended, callback set to UP")
                         }
                         go_down :: proc(tw: ^tween.Tween(vec3)) {
                                 tween.reset(tw)
                                 tw.initial = CAMERA_BOB_HIGH
                                 tw.final = CAMERA_BOB_LOW
                                 tw.callback = go_up
-                                log.debug("RUNNING tween: DOWN ended, callback set to UP")
+                                log.debug("RUNNING tween: UP ended, callback set to DOWN")
                         }
                         
                         player.camera_offset_tween = tween.new_callback(CAMERA_BOB_DUR, player.camera_offset, CAMERA_BOB_HIGH, vec3_lerp, callback = go_down, ease = .Sine_In_Out)
                         log.debug("RUNNING tween created")
+                } else {
+                        tween.change_dur(&player.camera_offset_tween, CAMERA_BOB_DUR if !player.is_sprinting else CAMERA_BOB_SPRINT_DUR)
                 }
         } else {
                 if player.camera_offset != CAMERA_BOB_ZERO && player.camera_offset_tween.final != CAMERA_BOB_ZERO {
-                        player.camera_offset_tween = tween.new(CAMERA_BOB_DUR, player.camera_offset, CAMERA_BOB_ZERO, vec3_lerp, ease = .Sine_In_Out)
+                        player.camera_offset_tween = tween.new(CAMERA_BOB_STOP_DUR, player.camera_offset, CAMERA_BOB_ZERO, vec3_lerp, ease = .Sine_In_Out)
                         log.debug("IDLE tween created")
                 }
         }
