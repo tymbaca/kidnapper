@@ -65,7 +65,10 @@ main :: proc() {
         
         ecs.init(w, {Transform, Player, Movement, Velocity}, allocator)
         ecs.register(w, debug_system)
+        ecs.register(w, gravity_system)
         ecs.register(w, player_movement_system)
+        ecs.register(w, player_jump_system)
+        ecs.register(w, player_collision_system)
         ecs.register(w, movement_system)
         ecs.register(w, velocity_system)
         ecs.register(w, player_direction_system)
